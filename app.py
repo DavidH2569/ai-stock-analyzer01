@@ -36,15 +36,18 @@ def get_yahoo_data(ticker):
 
 
 def predict_price(df):
-    df['Target'] = df['Close'].shift(-10)
-    df.dropna(inplace=True)
-    X = df[['Close', 'Return', 'MA10', 'MA50']]
-    y = df['Target']
-    model = RandomForestRegressor()
-    model.fit(X[:-10], y[:-10])
-    pred = model.predict([X.iloc[-1]])[0]
-    pct_gain = (pred - df['Close'].iloc[-1]) / df['Close'].iloc[-1] * 100
-    return round(pred, 2), round(pct_gain, 2)
+    try:
+        df['Target'] = df['Close'].shift(-10)
+        df.dropna(inplace=True)
+        X = df[['Close', 'Return', 'MA10', 'MA50']]
+        y = df['Target']
+        model = RandomForestRegressor()
+        model.fit(X[:-10], y[:-10])
+        pred = model.predict([X.iloc[-1]])[0]
+        pct_gain = (pred - df['Close'].iloc[-1]) / df['Close'].iloc[-1] * 100
+        return round(pred, 2), round(pct_gain, 2)
+    except:
+        return None, None
 
 def fetch_news(ticker):
     url = f"https://query1.finance.yahoo.com/v1/finance/search?q={ticker}"
@@ -81,6 +84,9 @@ if st.button("Run Analysis"):
         if df is None or df.empty:
             continue
         pred_price, gain = predict_price(df)
+if pred_price is None:
+    continue
+
         news = fetch_news(ticker)
         sentiment = get_sentiment(news)
         results.append({
