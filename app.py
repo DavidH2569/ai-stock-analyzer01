@@ -95,9 +95,15 @@ if st.button("Run Analysis"):
         
 if results:
     df_result = pd.DataFrame(results)
+
+    # Only sort if the column exists and contains numeric values
     if '% Gain (10d)' in df_result.columns:
+        df_result = df_result[pd.to_numeric(df_result['% Gain (10d)'], errors='coerce').notnull()]
         df_result = df_result.sort_values(by='% Gain (10d)', ascending=False)
+
+    st.subheader(f"✅ {len(df_result)} tickers analyzed successfully")
     st.dataframe(df_result, use_container_width=True)
+
     st.download_button("📤 Export CSV", df_result.to_csv(index=False), file_name="ai_stock_predictions.csv")
 else:
-    st.warning("⚠️ No data could be analyzed. This might be due to Alpaca API limits, missing secrets, or slow internet.")
+    st.warning("⚠️ No data could be analyzed. Check your internet or API limits.")
