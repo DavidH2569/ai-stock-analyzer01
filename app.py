@@ -84,8 +84,8 @@ if st.button("Run Analysis"):
         if df is None or df.empty:
             continue
         pred_price, gain = predict_price(df)
-if pred_price is None:
-    continue
+        if pred_price is None:
+            continue
 
         news = fetch_news(ticker)
         sentiment = get_sentiment(news)
