@@ -98,6 +98,12 @@ if st.button("Run Analysis"):
         })
         progress.progress((i+1)/len(tickers))
 
-    df_result = pd.DataFrame(results).sort_values(by='% Gain (10d)', ascending=False)
+    if results:
+    df_result = pd.DataFrame(results)
+    if '% Gain (10d)' in df_result.columns:
+        df_result = df_result.sort_values(by='% Gain (10d)', ascending=False)
     st.dataframe(df_result, use_container_width=True)
     st.download_button("📤 Export CSV", df_result.to_csv(index=False), file_name="ai_stock_predictions.csv")
+else:
+    st.warning("⚠️ No data could be analyzed. This might be due to Alpaca API limits, missing secrets, or slow internet.")
+
