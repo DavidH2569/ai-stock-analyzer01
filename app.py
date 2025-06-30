@@ -78,17 +78,21 @@ st.write("Analyzing top 100 most active stocks using price prediction + news sen
 if st.button("Run Analysis"):
     tickers = ["AAPL", "MSFT", "GOOGL", "TSLA", "AMZN", "NVDA", "META", "JPM", "V", "DIS"]
     results = []
+
     progress = st.progress(0)
+
     for i, ticker in enumerate(tickers):
         df = get_yahoo_data(ticker)
         if df is None or df.empty:
             continue
+
         pred_price, gain = predict_price(df)
         if pred_price is None:
             continue
 
         news = fetch_news(ticker)
         sentiment = get_sentiment(news)
+
         results.append({
             'Ticker': ticker,
             'Current Price': round(df['Close'].iloc[-1], 2),
@@ -97,19 +101,18 @@ if st.button("Run Analysis"):
             'News': news[:150],
             'Sentiment': sentiment[:150]
         })
-        progress.progress((i+1)/len(tickers))
-        
-if results:
-    df_result = pd.DataFrame(results)
 
-    # Only sort if the column exists and contains numeric values
-    if '% Gain (10d)' in df_result.columns:
-        df_result = df_result[pd.to_numeric(df_result['% Gain (10d)'], errors='coerce').notnull()]
-        df_result = df_result.sort_values(by='% Gain (10d)', ascending=False)
+        progress.progress((i + 1) / len(tickers))
 
-    st.subheader(f"✅ {len(df_result)} tickers analyzed successfully")
-    st.dataframe(df_result, use_container_width=True)
+    if results:
+        df_result = pd.DataFrame(results)
+        if '% Gain (10d)' in df_result.columns:
+            df_result = df_result[pd.to_numeric(df_result['% Gain (10d)'], errors='coerce').notnull()]
+            df_result = df_result.sort_values(by='% Gain (10d)', ascending=False)
 
-    st.download_button("📤 Export CSV", df_result.to_csv(index=False), file_name="ai_stock_predictions.csv")
-else:
-    st.warning("⚠️ No data could be analyzed. Check your internet or API limits.")
+        st.subheader(f"✅ {len(df_result)} tickers analyzed successfully")
+        st.dataframe(df_result, use_container_width=True)
+        st.download_button("📤 Export CSV", df_result.to_csv(index=False), file_name="ai_stock_predictions.csv")
+    else:
+        st.warning("⚠️ No data could be analyzed. Check your internet or ticker list.")
+
