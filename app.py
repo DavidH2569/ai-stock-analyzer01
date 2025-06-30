@@ -98,7 +98,7 @@ if st.button("Run Analysis"):
         })
         progress.progress((i+1)/len(tickers))
 
-    if results:
+if results:
     df_result = pd.DataFrame(results)
     if '% Gain (10d)' in df_result.columns:
         df_result = df_result.sort_values(by='% Gain (10d)', ascending=False)
