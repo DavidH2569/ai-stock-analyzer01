@@ -77,7 +77,7 @@ if st.button("Run Analysis"):
     results = []
     progress = st.progress(0)
     for i, ticker in enumerate(tickers):
-        df = get_alpaca_data(ticker)
+        df = get_yahoo_data(ticker)
         if df is None or df.empty:
             continue
         pred_price, gain = predict_price(df)
