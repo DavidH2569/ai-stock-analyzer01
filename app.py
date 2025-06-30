@@ -97,7 +97,7 @@ if st.button("Run Analysis"):
             'Sentiment': sentiment[:150]
         })
         progress.progress((i+1)/len(tickers))
-
+        
 if results:
     df_result = pd.DataFrame(results)
     if '% Gain (10d)' in df_result.columns:
@@ -106,4 +106,3 @@ if results:
     st.download_button("📤 Export CSV", df_result.to_csv(index=False), file_name="ai_stock_predictions.csv")
 else:
     st.warning("⚠️ No data could be analyzed. This might be due to Alpaca API limits, missing secrets, or slow internet.")
-
