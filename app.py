@@ -76,7 +76,7 @@ st.title("📊 AI Stock Analyzer")
 st.write("Analyzing top 100 most active stocks using price prediction + news sentiment")
 
 if st.button("Run Analysis"):
-    tickers = fetch_top_100_tickers()
+    tickers = ["AAPL", "MSFT", "GOOGL", "TSLA", "AMZN", "NVDA", "META", "JPM", "V", "DIS"]
     results = []
     progress = st.progress(0)
     for i, ticker in enumerate(tickers):
