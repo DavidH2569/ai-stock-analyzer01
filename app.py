@@ -5,6 +5,7 @@ import openai
 from datetime import datetime, timedelta
 from sklearn.ensemble import RandomForestRegressor
 import numpy as np
+import yfinance as yf
 
 # Load API keys from Streamlit secrets
 alpaca_key = st.secrets["ALPACA_KEY"]
@@ -21,24 +22,18 @@ def fetch_top_100_tickers():
     quotes = data['finance']['result'][0]['quotes']
     return [q['symbol'] for q in quotes if 'symbol' in q]
 
-def get_alpaca_data(ticker):
-    url = f"https://data.alpaca.markets/v2/stocks/{ticker}/bars?timeframe=1Day&limit=100"
-    headers = {
-        'APCA-API-KEY-ID': alpaca_key,
-        'APCA-API-SECRET-KEY': alpaca_secret
-    }
-    res = requests.get(url, headers=headers)
-    if res.status_code != 200:
+def get_yahoo_data(ticker):
+    try:
+        df = yf.download(ticker, period="6mo", interval="1d", progress=False)
+        df = df[['Close']]
+        df['Return'] = df['Close'].pct_change()
+        df['MA10'] = df['Close'].rolling(10).mean()
+        df['MA50'] = df['Close'].rolling(50).mean()
+        df.dropna(inplace=True)
+        return df
+    except:
         return None
-    raw = res.json()['bars']
-    df = pd.DataFrame(raw)
-    df['t'] = pd.to_datetime(df['t'])
-    df.set_index('t', inplace=True)
-    df.rename(columns={'c': 'Close'}, inplace=True)
-    df['Return'] = df['Close'].pct_change()
-    df['MA10'] = df['Close'].rolling(10).mean()
-    df['MA50'] = df['Close'].rolling(50).mean()
-    return df.dropna()
+
 
 def predict_price(df):
     df['Target'] = df['Close'].shift(-10)
