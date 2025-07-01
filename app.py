@@ -83,38 +83,37 @@ if st.button("Run Analysis"):
 
     progress = st.progress(0)
 
-    for i, ticker in enumerate(tickers):
-        st.text(f"🔍 Analyzing {ticker}...")
+for i, ticker in enumerate(tickers):
+    st.text(f"🔍 Analyzing {ticker}...")
 
-        df = get_yahoo_data(ticker)
-        if df is None or df.empty:
-            st.text(f"❌ {ticker}: No data from yfinance.")
-            continue
+    df = get_yahoo_data(ticker)
+    if df is None or df.empty:
+        st.text(f"❌ {ticker}: No data from yfinance.")
+        continue
 
-        pred_price, gain = predict_price(df)
-        if pred_price is None:
-            st.text(f"❌ {ticker}: Model failed to predict.")
-            continue
+    pred_price, gain = predict_price(df)
+    if pred_price is None:
+        st.text(f"❌ {ticker}: Model failed to predict.")
+        continue
 
-        news = fetch_news(ticker)
-        sentiment = get_sentiment(news)
+    news = fetch_news(ticker)
+    sentiment = get_sentiment(news)
 
-if gain is not None:
-    st.text(f"✅ {ticker}: Success. Predicted gain: {gain:.2f}%")
-else:
-    st.text(f"✅ {ticker}: Success. Predicted gain: unavailable")
+    if gain is not None:
+        st.text(f"✅ {ticker}: Success. Predicted gain: {gain:.2f}%")
+    else:
+        st.text(f"✅ {ticker}: Success. Predicted gain: unavailable")
 
+    results.append({
+        'Ticker': ticker,
+        'Current Price': round(df['Close'].iloc[-1], 2),
+        'Predicted Price': pred_price,
+        '% Gain (10d)': gain,
+        'News': news[:150],
+        'Sentiment': sentiment[:150]
+    })
 
-        results.append({
-            'Ticker': ticker,
-            'Current Price': round(df['Close'].iloc[-1], 2),
-            'Predicted Price': pred_price,
-            '% Gain (10d)': gain,
-            'News': news[:150],
-            'Sentiment': sentiment[:150]
-        })
-
-        progress.progress((i + 1) / len(tickers))
+    progress.progress((i + 1) / len(tickers))
 
     if results:
         df_result = pd.DataFrame(results)
