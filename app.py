@@ -82,16 +82,22 @@ if st.button("Run Analysis"):
     progress = st.progress(0)
 
     for i, ticker in enumerate(tickers):
+        st.text(f"🔍 Analyzing {ticker}...")
+
         df = get_yahoo_data(ticker)
         if df is None or df.empty:
+            st.text(f"❌ {ticker}: No data from yfinance.")
             continue
 
         pred_price, gain = predict_price(df)
         if pred_price is None:
+            st.text(f"❌ {ticker}: Model failed to predict.")
             continue
 
         news = fetch_news(ticker)
         sentiment = get_sentiment(news)
+
+        st.text(f"✅ {ticker}: Success. Predicted gain: {gain:.2f}%")
 
         results.append({
             'Ticker': ticker,
