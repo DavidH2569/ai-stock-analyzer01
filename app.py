@@ -122,9 +122,14 @@ if st.button("Run Analysis"):
 
         if '% Gain (10d)' in df_result.columns:
             df_result['% Gain (10d)'] = pd.to_numeric(df_result['% Gain (10d)'], errors='coerce')
+    
+            # 🔍 Debug: See all predicted gains before filtering
+            st.write("🔎 Raw predicted gains before filtering:", df_result[['Ticker', '% Gain (10d)']])
+    
             df_result = df_result.dropna(subset=['% Gain (10d)'])
-            df_result = df_result[df_result['% Gain (10d)'] > 0]
+            df_result = df_result[df_result['% Gain (10d)'] > 0.01]
             df_result = df_result.sort_values(by='% Gain (10d)', ascending=False)
+
 
             if len(df_result) > 0:
                 st.subheader(f"✅ {len(df_result)} tickers with positive predicted gain")
