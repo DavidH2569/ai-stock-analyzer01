@@ -119,13 +119,21 @@ if st.button("Run Analysis"):
 
     if results:
         df_result = pd.DataFrame(results)
+
         if '% Gain (10d)' in df_result.columns:
+            df_result['% Gain (10d)'] = pd.to_numeric(df_result['% Gain (10d)'], errors='coerce')
             df_result = df_result[df_result['% Gain (10d)'] > 0]
             df_result = df_result.sort_values(by='% Gain (10d)', ascending=False)
 
-        st.subheader(f"✅ {len(df_result)} tickers analyzed successfully")
-        st.dataframe(df_result, use_container_width=True)
-        st.download_button("📤 Export CSV", df_result.to_csv(index=False), file_name="ai_stock_predictions.csv")
+            if len(df_result) > 0:
+                st.subheader(f"✅ {len(df_result)} tickers with positive predicted gain")
+                st.dataframe(df_result, use_container_width=True)
+                st.download_button("📤 Export CSV", df_result.to_csv(index=False), file_name="ai_stock_predictions.csv")
+            else:
+                st.warning("⚠️ No tickers with positive predicted gains today.")
+        else:
+            st.warning("⚠️ Prediction results missing expected column.")
     else:
         st.warning("⚠️ No data could be analyzed. Check yfinance response or prediction logic.")
+
 
