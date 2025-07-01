@@ -115,12 +115,16 @@ if st.button("Run Analysis"):
     progress = st.progress(0)
 
     for i, ticker in enumerate(tickers):
+        st.write(f"🔍 Analyzing {ticker}...")
+
         df = get_yahoo_data(ticker)
         if df is None or df.empty:
+            st.write(f"❌ {ticker}: No price data")
             continue
 
         pred_price, gain = predict_price(df)
         if pred_price is None:
+            st.write(f"❌ {ticker}: Prediction failed")
             continue
 
         news = fetch_news(ticker)
@@ -128,17 +132,19 @@ if st.button("Run Analysis"):
 
         try:
             gain_float = float(gain)
-        except (TypeError, ValueError):
-            gain_float = None
+            st.write(f"✅ {ticker}: Gain {gain_float:.2f}%")
+        except:
+            st.write(f"⚠️ {ticker}: Gain conversion failed")
 
         results.append({
             'Ticker': ticker,
-            'Current Price': round(float(df['Close'].iloc[-1]), 2),
-            'Predicted Price': float(pred_price) if pred_price is not None else None,
+            'Current Price': round(df['Close'].iloc[-1], 2),
+            'Predicted Price': float(pred_price),
             '% Gain (10d)': gain_float,
             'News': news[:150],
             'Sentiment': sentiment[:150]
         })
+
 
 
         progress.progress((i + 1) / len(tickers))
