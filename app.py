@@ -37,6 +37,8 @@ def get_yahoo_data(ticker):
 
 def predict_price(df):
     try:
+        if len(df) < 50:
+            return None, None
         df['Target'] = df['Close'].shift(-10)
         df.dropna(inplace=True)
         X = df[['Close', 'Return', 'MA10', 'MA50']]
@@ -97,7 +99,11 @@ if st.button("Run Analysis"):
         news = fetch_news(ticker)
         sentiment = get_sentiment(news)
 
-        st.text(f"✅ {ticker}: Success. Predicted gain: {gain:.2f}%")
+if gain is not None:
+    st.text(f"✅ {ticker}: Success. Predicted gain: {gain:.2f}%")
+else:
+    st.text(f"✅ {ticker}: Success. Predicted gain: unavailable")
+
 
         results.append({
             'Ticker': ticker,
