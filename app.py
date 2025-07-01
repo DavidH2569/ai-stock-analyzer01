@@ -77,29 +77,30 @@ def get_sentiment(news):
         return "Sentiment analysis failed."
 
 def get_top_active_sp500(limit=100):
-    # Download full list of S&P 500 tickers
-    # import requests
-    # import pandas as pd
+    import requests
+    import pandas as pd
 
+    st.write("📥 Loading S&P 500 tickers...")
     sp500_url = "https://datahub.io/core/s-and-p-500-companies/r/constituents.csv"
     df = pd.read_csv(sp500_url)
     tickers = df['Symbol'].tolist()
 
     volumes = []
-    for ticker in tickers:
+    for i, ticker in enumerate(tickers):
         try:
+            st.write(f"🔄 Checking {ticker} ({i+1}/{len(tickers)})")
             data = yf.download(ticker, period="5d", interval="1d", progress=False)
             if 'Volume' in data.columns and not data['Volume'].isnull().all():
                 avg_volume = data['Volume'].mean()
-                if pd.notna(avg_volume):  # only add if it's a real number
+                if pd.notna(avg_volume):
                     volumes.append((ticker, float(avg_volume)))
         except Exception:
             continue
 
-
-    # Sort by highest volume
+    st.write("✅ Finished collecting volumes. Sorting...")
     sorted_volumes = sorted(volumes, key=lambda x: x[1], reverse=True)
     top_tickers = [t[0] for t in sorted_volumes[:limit]]
+    st.write(f"✅ Top {limit} tickers selected.")
     return top_tickers
 
 
