@@ -2,119 +2,116 @@ import streamlit as st
 import pandas as pd
 import yfinance as yf
 import openai
-from datetime import datetime, timedelta
+import time
 
-# --- SETTINGS ---
 st.set_page_config(page_title="AI Stock Analyzer", layout="wide")
-st.title("📈 AI Stock Analyzer (S&P 500)")
+st.title("📈 AI Stock Analyzer - S&P 500")
 
 openai.api_key = st.secrets.get("OPENAI_API_KEY", "")
 
-# --- Load S&P 500 tickers ---
-@st.cache_data
+@st.cache_data(show_spinner=False)
 def load_sp500():
-    table = pd.read_html("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies")
+    url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
+    table = pd.read_html(url)
     return table[0]["Symbol"].tolist()
 
-def get_top_active_sp500(limit=50):
+@st.cache_data(show_spinner=False)
+def get_top_active_sp500(limit=20):
     tickers = load_sp500()
     volumes = []
-    for ticker in tickers:
+    for i, ticker in enumerate(tickers):
         try:
-            data = yf.download(ticker, period="5d", interval="1d", progress=False)
-            if not data.empty:
-                avg_volume = data["Volume"].mean()
-                volumes.append((ticker, avg_volume))
+            data = yf.download(ticker, period="5d", progress=False)
+            vol = data["Volume"].iloc[-1] if not data.empty else 0
+            volumes.append((ticker, vol))
         except:
-            continue
-    sorted_vols = sorted(volumes, key=lambda x: x[1], reverse=True)
-    return [x[0] for x in sorted_vols[:limit]]
+            volumes.append((ticker, 0))
+        time.sleep(0.5)
+    sorted_volumes = sorted(volumes, key=lambda x: x[1], reverse=True)
+    return [x[0] for x in sorted_volumes[:limit]]
 
-# --- Data Fetching ---
 def get_yahoo_data(ticker):
     try:
-        return yf.download(ticker, period="30d", interval="1d", progress=False)
+        return yf.download(ticker, period="60d", interval="1d", progress=False)
     except:
         return None
 
-# --- Price Prediction ---
 def predict_price(df):
     try:
-        df = df.dropna()
-        if len(df) < 10:
-            return None, None
-        recent = df["Close"][-10:].values
-        pred_price = recent.mean() * 1.02  # Dummy model: +2% in 10d
-        gain = ((pred_price - recent[-1]) / recent[-1]) * 100
-        return pred_price, gain
+        last_close = df["Close"].iloc[-1]
+        future_close = df["Close"].iloc[-1] * (1 + (df["Close"].pct_change().mean() * 10))
+        pct_gain = ((future_close - last_close) / last_close) * 100
+        return future_close, pct_gain
     except:
         return None, None
 
-# --- News Fetching ---
-def fetch_news(ticker):
-    try:
-        return f"Latest news for {ticker}."  # Replace with real news fetch logic later
-    except:
-        return "No news available."
-
-# --- Sentiment Analysis ---
 def get_sentiment(news):
-    if not news or "no news" in news.lower():
-        return "No news"
+    if not news or news.strip() == "" or news == "No news available.":
+        return "No news to analyze."
+    prompt = f"Analyze the sentiment of this financial news. Is it positive, neutral, or negative?\n\n{news}"
     try:
         response = openai.ChatCompletion.create(
             model="gpt-4",
-            messages=[{"role": "user", "content": f"Analyze the sentiment of this financial news: {news}"}]
+            messages=[{"role": "user", "content": prompt}]
         )
-        return response["choices"][0]["message"]["content"]
-    except:
-        return "Sentiment failed"
+        return response['choices'][0]['message']['content']
+    except Exception as e:
+        return "Sentiment analysis failed."
 
-# --- MAIN ---
-st.subheader("Step 1: Get Top 50 Active S&P 500 Tickers")
-if st.button("Run Analysis"):
-    with st.spinner("📥 Loading tickers and analyzing..."):
-        tickers = get_top_active_sp500(limit=50)
-        results = []
+def fetch_news(ticker):
+    return "Placeholder news text for sentiment analysis."
 
-        for ticker in tickers:
-            df = get_yahoo_data(ticker)
-            if df is None or df.empty:
-                continue
+st.sidebar.header("⚙️ Options")
+if st.sidebar.button("Run Analysis"):
+    st.subheader("📥 Loading S&P 500 tickers...")
+    tickers = get_top_active_sp500(limit=20)
+    results = []
 
-            pred_price, gain = predict_price(df)
-            if pred_price is None:
-                continue
+    for i, ticker in enumerate(tickers):
+        st.write(f"🔄 Checking {ticker} ({i+1}/{len(tickers)})")
 
-            try:
-                current_price = df['Close'].iloc[-1]
-                gain_float = float(gain)
-            except:
-                continue
+        df = get_yahoo_data(ticker)
+        if df is None or df.empty:
+            continue
 
-            news = fetch_news(ticker)
-            sentiment = get_sentiment(news)
+        pred_price, gain = predict_price(df)
+        if pred_price is None:
+            continue
 
-            results.append({
-                "Ticker": ticker,
-                "Current Price": round(current_price, 2),
-                "Predicted Price": round(pred_price, 2),
-                "% Gain (10d)": round(gain_float, 2),
-                "News": news,
-                "Sentiment": sentiment
-            })
+        news = fetch_news(ticker)
+        sentiment = get_sentiment(news)
 
+        try:
+            gain_float = float(gain)
+        except (TypeError, ValueError):
+            gain_float = None
+
+        results.append({
+            'Ticker': ticker,
+            'Current Price': round(df['Close'].iloc[-1], 2),
+            'Predicted Price': round(pred_price, 2) if pred_price is not None else None,
+            '% Gain (10d)': round(gain_float, 2) if gain_float is not None else None,
+            'News': news[:150],
+            'Sentiment': sentiment[:150]
+        })
+
+    if results:
         df_result = pd.DataFrame(results)
-
-        if not df_result.empty:
-            df_result = df_result[pd.to_numeric(df_result['% Gain (10d)'], errors='coerce').notnull()]
+        if '% Gain (10d)' in df_result.columns:
+            df_result['% Gain (10d)'] = pd.to_numeric(df_result['% Gain (10d)'], errors='coerce')
+            df_result = df_result.dropna(subset=['% Gain (10d)'])
             df_result = df_result[df_result['% Gain (10d)'] > 0]
             df_result = df_result.sort_values(by='% Gain (10d)', ascending=False)
 
-            st.success(f"✅ {len(df_result)} stocks found with positive forecast")
-            st.dataframe(df_result, use_container_width=True)
-            st.download_button("📤 Download Results", df_result.to_csv(index=False), "ai_predictions.csv")
+        if df_result.empty:
+            st.warning("⚠️ No tickers with positive predicted gains today.")
         else:
-            st.warning("⚠️ No stocks found with positive predicted gains.")
+            st.subheader(f"✅ {len(df_result)} tickers analyzed successfully")
+            st.dataframe(df_result, use_container_width=True)
+            st.download_button("📤 Export CSV", df_result.to_csv(index=False), file_name="ai_stock_predictions.csv")
+    else:
+        st.warning("⚠️ No data could be analyzed. Check yfinance response or prediction logic.")
+else:
+    st.info("👈 Click 'Run Analysis' to begin.")
 
 
