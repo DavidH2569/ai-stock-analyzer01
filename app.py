@@ -34,7 +34,6 @@ def get_yahoo_data(ticker):
     except:
         return None
 
-
 def predict_price(df):
     try:
         if len(df) < 50:
@@ -50,7 +49,6 @@ def predict_price(df):
         return round(pred, 2), round(pct_gain, 2)
     except:
         return None, None
-
 
 def fetch_news(ticker):
     url = f"https://query1.finance.yahoo.com/v1/finance/search?q={ticker}"
@@ -78,13 +76,36 @@ def get_sentiment(news):
     except Exception:
         return "Sentiment analysis failed."
 
+def get_top_active_sp500(limit=100):
+    # Download full list of S&P 500 tickers
+    # import requests
+    # import pandas as pd
+
+    sp500_url = "https://datahub.io/core/s-and-p-500-companies/r/constituents.csv"
+    df = pd.read_csv(sp500_url)
+    tickers = df['Symbol'].tolist()
+
+    volumes = []
+    for ticker in tickers:
+        try:
+            data = yf.download(ticker, period="5d", interval="1d", progress=False)
+            avg_volume = data['Volume'].mean()
+            volumes.append((ticker, avg_volume))
+        except:
+            continue
+
+    # Sort by highest volume
+    sorted_volumes = sorted(volumes, key=lambda x: x[1], reverse=True)
+    top_tickers = [t[0] for t in sorted_volumes[:limit]]
+    return top_tickers
+
 
 # ----- STREAMLIT UI -----
 st.title("📊 AI Stock Analyzer")
 st.write("Analyzing top 100 most active stocks using price prediction + news sentiment")
 
 if st.button("Run Analysis"):
-    tickers = ["AAPL", "MSFT", "GOOGL", "TSLA", "AMZN", "NVDA", "META", "JPM", "V", "DIS"]
+    tickers = get_top_active_sp500(limit=100)
     results = []
 
     progress = st.progress(0)
