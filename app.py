@@ -85,16 +85,16 @@ if st.button("Run Analysis"):
     progress = st.progress(0)
 
     for i, ticker in enumerate(tickers):
-        st.text(f"🔍 Analyzing {ticker}...")
+        # st.text(f"🔍 Analyzing {ticker}...")
 
         df = get_yahoo_data(ticker)
         if df is None or df.empty:
-            st.text(f"❌ {ticker}: No data from yfinance.")
+            # st.text(f"❌ {ticker}: No data from yfinance.")
             continue
 
         pred_price, gain = predict_price(df)
         if pred_price is None:
-            st.text(f"❌ {ticker}: Model failed to predict.")
+            # st.text(f"❌ {ticker}: Model failed to predict.")
             continue
 
         news = fetch_news(ticker)
@@ -102,9 +102,9 @@ if st.button("Run Analysis"):
 
         try:
             gain_float = float(gain)
-            st.text(f"✅ {ticker}: Success. Predicted gain: {gain_float:.2f}%")
+            # st.text(f"✅ {ticker}: Success. Predicted gain: {gain_float:.2f}%")
         except (TypeError, ValueError):
-            st.text(f"✅ {ticker}: Success. Predicted gain: unavailable")
+            # st.text(f"✅ {ticker}: Success. Predicted gain: unavailable")
 
         results.append({
             'Ticker': ticker,
@@ -124,7 +124,7 @@ if st.button("Run Analysis"):
             df_result['% Gain (10d)'] = pd.to_numeric(df_result['% Gain (10d)'], errors='coerce')
     
             # 🔍 Debug: See all predicted gains before filtering
-            st.write("🔎 Raw predicted gains before filtering:", df_result[['Ticker', '% Gain (10d)']])
+            # st.write("🔎 Raw predicted gains before filtering:", df_result[['Ticker', '% Gain (10d)']])
     
             df_result = df_result.dropna(subset=['% Gain (10d)'])
             df_result = df_result[df_result['% Gain (10d)'] > 0.01]
