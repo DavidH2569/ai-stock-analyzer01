@@ -99,9 +99,10 @@ if st.button("Run Analysis"):
         news = fetch_news(ticker)
         sentiment = get_sentiment(news)
 
-        if gain is not None and not pd.isna(gain):
-            st.text(f"✅ {ticker}: Success. Predicted gain: {gain:.2f}%")
-        else:
+        try:
+            gain_float = float(gain)
+            st.text(f"✅ {ticker}: Success. Predicted gain: {gain_float:.2f}%")
+        except (TypeError, ValueError):
             st.text(f"✅ {ticker}: Success. Predicted gain: unavailable")
 
         results.append({
