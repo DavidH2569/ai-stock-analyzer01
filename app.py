@@ -8,8 +8,8 @@ import numpy as np
 import yfinance as yf
 
 # Load API keys from Streamlit secrets
-alpaca_key = st.secrets["ALPACA_KEY"]
-alpaca_secret = st.secrets["ALPACA_SECRET"]
+# alpaca_key = st.secrets["ALPACA_KEY"]
+# alpaca_secret = st.secrets["ALPACA_SECRET"]
 openai.api_key = st.secrets["OPENAI_KEY"]
 
 # ----- FUNCTIONS -----
@@ -64,15 +64,20 @@ def fetch_news(ticker):
     return "No news found."
 
 def get_sentiment(news):
+    if not news or news.strip() == "" or news == "No news available.":
+        return "No news to analyze."
+
     prompt = f"Analyze the sentiment of this financial news. Is it positive, neutral, or negative?\n\n{news}"
+    
     try:
         response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[{"role": "user", "content": prompt}]
         )
-        return response['choices'][0]['message']['content']
-    except Exception as e:
+        return response['choices'][0]['message']['content'].strip()
+    except Exception:
         return "Sentiment analysis failed."
+
 
 # ----- STREAMLIT UI -----
 st.title("📊 AI Stock Analyzer")
