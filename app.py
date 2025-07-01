@@ -103,7 +103,7 @@ if st.button("Run Analysis"):
 
         results.append({
             'Ticker': ticker,
-            'Current Price': round(df['Close'].iloc[-1], 2),
+            'Current Price': round(float(df['Close'].iloc[-1]), 2),
             'Predicted Price': float(pred_price) if pred_price is not None else None,
             '% Gain (10d)': gain_float,
             'News': news[:150],
