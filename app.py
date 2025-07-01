@@ -45,11 +45,12 @@ def predict_price(df):
         y = df['Target']
         model = RandomForestRegressor()
         model.fit(X[:-10], y[:-10])
-        pred = model.predict([X.iloc[-1]])[0]
+        pred = float(model.predict([X.iloc[-1]])[0])
         pct_gain = (pred - df['Close'].iloc[-1]) / df['Close'].iloc[-1] * 100
         return round(pred, 2), round(pct_gain, 2)
     except:
         return None, None
+
 
 def fetch_news(ticker):
     url = f"https://query1.finance.yahoo.com/v1/finance/search?q={ticker}"
