@@ -89,10 +89,13 @@ def get_top_active_sp500(limit=100):
     for ticker in tickers:
         try:
             data = yf.download(ticker, period="5d", interval="1d", progress=False)
-            avg_volume = data['Volume'].mean()
-            volumes.append((ticker, avg_volume))
-        except:
+            if 'Volume' in data.columns and not data['Volume'].isnull().all():
+                avg_volume = data['Volume'].mean()
+                if pd.notna(avg_volume):  # only add if it's a real number
+                    volumes.append((ticker, float(avg_volume)))
+        except Exception:
             continue
+
 
     # Sort by highest volume
     sorted_volumes = sorted(volumes, key=lambda x: x[1], reverse=True)
