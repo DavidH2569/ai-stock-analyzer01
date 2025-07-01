@@ -77,8 +77,8 @@ def get_sentiment(news):
         return "Sentiment analysis failed."
 
 def get_top_active_sp500(limit=100):
-    import requests
-    import pandas as pd
+    # import requests
+    # import pandas as pd
 
     st.write("📥 Loading S&P 500 tickers...")
     sp500_url = "https://datahub.io/core/s-and-p-500-companies/r/constituents.csv"
@@ -106,10 +106,10 @@ def get_top_active_sp500(limit=100):
 
 # ----- STREAMLIT UI -----
 st.title("📊 AI Stock Analyzer")
-st.write("Analyzing top 100 most active stocks using price prediction + news sentiment")
+st.write("Analyzing top 50 most active stocks using price prediction + news sentiment")
 
 if st.button("Run Analysis"):
-    tickers = get_top_active_sp500(limit=100)
+    tickers = get_top_active_sp500(limit=50)
     results = []
 
     progress = st.progress(0)
