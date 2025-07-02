@@ -66,7 +66,7 @@ if st.button("▶️ Run Analysis"):
 
         results.append({
             "Ticker": ticker,
-            "Current Price": round(df["Close"].iloc[-1], 2),
+            'Current Price': round(float(df['Close'].iloc[-1]), 2),
             "Predicted Price": round(float(pred_price), 2) if pred_price is not None else None,
             "% Gain (10d)": round(float(gain), 2) if gain is not None else None,
             "Sentiment": sentiment
