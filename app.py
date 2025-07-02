@@ -53,7 +53,7 @@ if st.button("▶️ Run Analysis"):
 
     results = []
     for ticker in TICKERS:
-        st.write(f"🔍 Analyzing {ticker}...")
+        # st.write(f"🔍 Analyzing {ticker}...")
         df = get_yahoo_data(ticker)
         if df is None:
             continue
