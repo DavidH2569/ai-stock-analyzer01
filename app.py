@@ -54,7 +54,7 @@ def get_sentiment(news):
         return "Sentiment failed"
 
 if st.button("▶️ Run Analysis"):
-    st.info("Running analysis on 20 S&P 500 stocks...")
+    st.info("Running analysis on 100 S&P 500 stocks...")
 
     results = []
     for ticker in TICKERS:
