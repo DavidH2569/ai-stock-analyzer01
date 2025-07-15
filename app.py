@@ -9,13 +9,18 @@ openai.api_key = st.secrets.get("OPENAI_KEY", "")
 
 st.title("📈 AI Stock Analyzer")
 
-# Example hardcoded tickers (20 popular ones)
-TICKERS = [
-    "AAPL", "MSFT", "GOOGL", "AMZN", "META",
-    "TSLA", "NVDA", "JPM", "V", "DIS",
-    "NFLX", "PEP", "KO", "INTC", "AMD",
-    "BA", "WMT", "CVX", "XOM", "PFE"
-]
+# Example hardcoded tickers (100 popular ones)
+TICKERS = ["NVDA", "MSFT", "AAPL", "AMZN", "GOOG", "META", "AVGO", "TSLA", "JPM", "WMT",
+           "LLY", "V", "ORCL", "NFLX", "MA", "XOM", "COST", "JNJ", "PG", "HD",
+           "BAC", "ABBV", "PLTR", "KO", "PM", "UNH", "CSCO", "IBM", "WFC", "CVX",
+           "GE", "TMUS", "CRM", "ABT", "MS", "AMD", "AXP", "LIN", "DIS", "INTU",
+           "GS", "NOW", "MRK", "MCD", "T", "UBER", "TXN", "RTX", "BX", "CAT",
+           "ISRG", "ACN", "BKNG", "PEP", "VZ", "QCOM", "BA", "SCHW", "BLK", "ADBE",
+           "SPGI", "C", "AMGN", "TMO", "AMAT", "HON", "BSX", "NEE", "SYK", "PGR",
+           "GEV", "PFE", "DHR", "UNP", "ETN", "GILD", "COF", "TJX", "MU", "DE",
+           "PANW", "CMCSA", "ANET", "LRCX", "CRWD", "LOW", "ADP", "KKR", "KLAC", "ADI",
+           "VRTX", "COP", "APH", "MDT", "CB", "NKE", "SBUX", "LMT", "MMC", "ICE"
+           ]
 
 def get_yahoo_data(ticker):
     try:
